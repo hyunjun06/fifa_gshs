@@ -1,6 +1,9 @@
 import 'package:fifa_gshs/constants/theme_colors.dart';
+import 'package:fifa_gshs/states/search_conditions_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:redux/redux.dart';
 
 import '../constants/gaps.dart';
 import '../constants/sizes.dart';
@@ -13,282 +16,74 @@ class SearchConditionsScreen extends StatefulWidget {
 }
 
 class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
-  late final List<PlayerClass> _classes;
-  final _classNames = [
-    "GS40",
-    "GS40",
-    "GS40",
-    "GS40",
-    "GS40",
-    "GS40",
-    "GS40",
-    "GS40",
-    "GS40",
-    "GS40",
-    "GS40",
-    "GS40",
-    "GS40",
-    "GS40",
-    "GS40",
-    "GS40",
-    "GS40",
-    "GS40",
-  ];
-  final _classKeys = [
-    GlobalKey<PlayerClassState>(),
-    GlobalKey<PlayerClassState>(),
-    GlobalKey<PlayerClassState>(),
-    GlobalKey<PlayerClassState>(),
-    GlobalKey<PlayerClassState>(),
-    GlobalKey<PlayerClassState>(),
-    GlobalKey<PlayerClassState>(),
-    GlobalKey<PlayerClassState>(),
-    GlobalKey<PlayerClassState>(),
-    GlobalKey<PlayerClassState>(),
-    GlobalKey<PlayerClassState>(),
-    GlobalKey<PlayerClassState>(),
-    GlobalKey<PlayerClassState>(),
-    GlobalKey<PlayerClassState>(),
-    GlobalKey<PlayerClassState>(),
-    GlobalKey<PlayerClassState>(),
-    GlobalKey<PlayerClassState>(),
-    GlobalKey<PlayerClassState>(),
-  ];
-  final _sortTypes = [
-    "오버롤",
-  ];
-  final _sortTypes2 = [
-    "높은순",
-    "낮은순",
-  ];
-
-  String _sortType = "오버롤", _sortType2 = "높은순";
+  final _sortTypes1 = ["오버롤"], _sortTypes2 = ["높은순", "낮은순"];
   bool _isClassAllSelect = true;
-  bool _FW = false,
-      _LW = false,
-      _ST = false,
-      _RW = false,
-      _CF = false,
-      _MF = false,
-      _CAM = false,
-      _LM = false,
-      _CM = false,
-      _RM = false,
-      _CDM = false,
-      _DF = false,
-      _LB = false,
-      _CB = false,
-      _RB = false,
-      _LWB = false,
-      _RWB = false,
-      _SW = false,
-      _GK = false;
 
   @override
   void initState() {
     super.initState();
-    _classes = List.generate(
-      _classNames.length,
-      (index) => PlayerClass(
-        key: _classKeys[index],
-        className: _classNames[index],
-      ),
-    );
   }
 
   void _onToggleClassAllSelect(bool? newValue) {
     setState(() {
       _isClassAllSelect = newValue!;
-
-      for (GlobalKey<PlayerClassState> playerClassKey in _classKeys) {
-        playerClassKey.currentState!.setSelected(_isClassAllSelect);
-      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(Sizes.size10),
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            UiContainer(
-              child: TextField(
-                decoration: InputDecoration(
-                  isDense: true,
-                  prefixIcon: const Padding(
-                    padding: EdgeInsets.only(
-                      left: Sizes.size12,
-                      right: Sizes.size8,
+    return StoreBuilder(
+      builder: (_, Store<SearchConditionsState> store) => Padding(
+        padding: const EdgeInsets.all(Sizes.size10),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              UiContainer(
+                child: TextField(
+                  decoration: InputDecoration(
+                    isDense: true,
+                    prefixIcon: const Padding(
+                      padding: EdgeInsets.only(
+                        left: Sizes.size12,
+                        right: Sizes.size8,
+                      ),
+                      child: FaIcon(
+                        FontAwesomeIcons.magnifyingGlass,
+                        size: Sizes.size16,
+                      ),
                     ),
-                    child: FaIcon(
-                      FontAwesomeIcons.magnifyingGlass,
-                      size: Sizes.size16,
+                    prefixIconConstraints: const BoxConstraints(
+                      minWidth: Sizes.size16 + Sizes.size2,
                     ),
-                  ),
-                  prefixIconConstraints: const BoxConstraints(
-                    minWidth: Sizes.size16 + Sizes.size2,
-                  ),
-                  hintText: "선수명을 입력하세요. (\",\"로 다중검색)",
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(Sizes.size4),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(Sizes.size4),
+                    hintText: "선수명을 입력하세요. (\",\"로 다중검색)",
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(Sizes.size4),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(Sizes.size4),
+                    ),
                   ),
                 ),
               ),
-            ),
-            Gaps.v16,
-            UiContainer(
-              title: "클래스",
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: Sizes.size24,
-                        height: Sizes.size24,
-                        child: Checkbox(
-                          value: _isClassAllSelect,
-                          onChanged: _onToggleClassAllSelect,
-                        ),
-                      ),
-                      const Text(
-                        "전체",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: Sizes.size16,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Gaps.v12,
-                  CustomGrid(
-                    itemWidth: Sizes.size48,
-                    children: _classes,
-                  ),
-                ],
-              ),
-            ),
-            Gaps.v16,
-            UiContainer(
-              title: "포지션",
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
+              Gaps.v16,
+              UiContainer(
+                title: "클래스",
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(children: [
-                      SizedBox(
-                        width: Sizes.size24,
-                        height: Sizes.size24,
-                        child: Checkbox(
-                          value: _FW,
-                          onChanged: (bool? newValue) {
-                            setState(() {
-                              _FW = newValue!;
-                              _LW = newValue;
-                              _ST = newValue;
-                              _RW = newValue;
-                              _CF = newValue;
-                            });
-                          },
-                        ),
-                      ),
-                      Gaps.h8,
-                      const Text(
-                        "FW",
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontSize: Sizes.size16,
-                        ),
-                      ),
-                    ]),
-                    Gaps.v12,
                     Row(
                       children: [
                         SizedBox(
                           width: Sizes.size24,
                           height: Sizes.size24,
                           child: Checkbox(
-                            value: _LW,
-                            onChanged: (bool? newValue) {
-                              setState(() {
-                                _LW = newValue!;
-                              });
-                            },
+                            value: _isClassAllSelect,
+                            onChanged: _onToggleClassAllSelect,
                           ),
                         ),
-                        Gaps.h8,
                         const Text(
-                          "LW",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: Sizes.size16,
-                          ),
-                        ),
-                        Gaps.h8,
-                        SizedBox(
-                          width: Sizes.size24,
-                          height: Sizes.size24,
-                          child: Checkbox(
-                            value: _ST,
-                            onChanged: (bool? newValue) {
-                              setState(() {
-                                _ST = newValue!;
-                              });
-                            },
-                          ),
-                        ),
-                        Gaps.h8,
-                        const Text(
-                          "ST",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: Sizes.size16,
-                          ),
-                        ),
-                        Gaps.h8,
-                        SizedBox(
-                          width: Sizes.size24,
-                          height: Sizes.size24,
-                          child: Checkbox(
-                            value: _RW,
-                            onChanged: (bool? newValue) {
-                              setState(() {
-                                _RW = newValue!;
-                              });
-                            },
-                          ),
-                        ),
-                        Gaps.h8,
-                        const Text(
-                          "RW",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: Sizes.size16,
-                          ),
-                        ),
-                        Gaps.h8,
-                        SizedBox(
-                          width: Sizes.size24,
-                          height: Sizes.size24,
-                          child: Checkbox(
-                            value: _CF,
-                            onChanged: (bool? newValue) {
-                              setState(() {
-                                _CF = newValue!;
-                              });
-                            },
-                          ),
-                        ),
-                        Gaps.h8,
-                        const Text(
-                          "CF",
+                          "전체",
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: Sizes.size16,
@@ -297,402 +92,678 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                       ],
                     ),
                     Gaps.v12,
-                    Row(children: [
-                      SizedBox(
-                        width: Sizes.size24,
-                        height: Sizes.size24,
-                        child: Checkbox(
-                          value: _MF,
-                          onChanged: (bool? newValue) {
-                            setState(() {
-                              _MF = newValue!;
-                              _CAM = newValue;
-                              _LM = newValue;
-                              _CM = newValue;
-                              _RM = newValue;
-                              _CDM = newValue;
-                            });
-                          },
+                    CustomGrid(
+                      itemWidth: Sizes.size48,
+                      children: List.generate(
+                        (store.state).classNames.length,
+                        (index) => PlayerClass(
+                          className: (store.state).classNames[index],
+                          isSelected: (store.state).classValues[index],
+                          store: store,
                         ),
                       ),
-                      Gaps.h8,
-                      const Text(
-                        "MF",
-                        style: TextStyle(
-                          color: Colors.green,
-                          fontSize: Sizes.size16,
-                        ),
-                      ),
-                    ]),
-                    Gaps.v12,
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: Sizes.size24,
-                          height: Sizes.size24,
-                          child: Checkbox(
-                            value: _CAM,
-                            onChanged: (bool? newValue) {
-                              setState(() {
-                                _CAM = newValue!;
-                              });
-                            },
-                          ),
-                        ),
-                        Gaps.h8,
-                        const Text(
-                          "CAM",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: Sizes.size16,
-                          ),
-                        ),
-                        Gaps.h8,
-                        SizedBox(
-                          width: Sizes.size24,
-                          height: Sizes.size24,
-                          child: Checkbox(
-                            value: _LM,
-                            onChanged: (bool? newValue) {
-                              setState(() {
-                                _LM = newValue!;
-                              });
-                            },
-                          ),
-                        ),
-                        Gaps.h8,
-                        const Text(
-                          "LM",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: Sizes.size16,
-                          ),
-                        ),
-                        Gaps.h8,
-                        SizedBox(
-                          width: Sizes.size24,
-                          height: Sizes.size24,
-                          child: Checkbox(
-                            value: _CM,
-                            onChanged: (bool? newValue) {
-                              setState(() {
-                                _CM = newValue!;
-                              });
-                            },
-                          ),
-                        ),
-                        Gaps.h8,
-                        const Text(
-                          "CM",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: Sizes.size16,
-                          ),
-                        ),
-                        Gaps.h8,
-                        SizedBox(
-                          width: Sizes.size24,
-                          height: Sizes.size24,
-                          child: Checkbox(
-                            value: _RM,
-                            onChanged: (bool? newValue) {
-                              setState(() {
-                                _RM = newValue!;
-                              });
-                            },
-                          ),
-                        ),
-                        Gaps.h8,
-                        const Text(
-                          "RM",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: Sizes.size16,
-                          ),
-                        ),
-                        Gaps.h8,
-                        SizedBox(
-                          width: Sizes.size24,
-                          height: Sizes.size24,
-                          child: Checkbox(
-                            value: _CDM,
-                            onChanged: (bool? newValue) {
-                              setState(() {
-                                _CDM = newValue!;
-                              });
-                            },
-                          ),
-                        ),
-                        Gaps.h8,
-                        const Text(
-                          "CDM",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: Sizes.size16,
-                          ),
-                        ),
-                      ],
                     ),
-                    Gaps.v12,
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: Sizes.size24,
-                          height: Sizes.size24,
-                          child: Checkbox(
-                            value: _DF,
-                            onChanged: (bool? newValue) {
-                              setState(() {
-                                _DF = newValue!;
-                                _LWB = newValue;
-                                _LB = newValue;
-                                _CB = newValue;
-                                _RB = newValue;
-                                _RWB = newValue;
-                                _SW = newValue;
-                              });
-                            },
-                          ),
-                        ),
-                        Gaps.h8,
-                        const Text(
-                          "DF",
-                          style: TextStyle(
-                            color: Colors.blue,
-                            fontSize: Sizes.size16,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Gaps.v12,
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: Sizes.size24,
-                          height: Sizes.size24,
-                          child: Checkbox(
-                            value: _LWB,
-                            onChanged: (bool? newValue) {
-                              setState(() {
-                                _LWB = newValue!;
-                              });
-                            },
-                          ),
-                        ),
-                        Gaps.h8,
-                        const Text(
-                          "LWB",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: Sizes.size16,
-                          ),
-                        ),
-                        Gaps.h8,
-                        SizedBox(
-                          width: Sizes.size24,
-                          height: Sizes.size24,
-                          child: Checkbox(
-                            value: _LB,
-                            onChanged: (bool? newValue) {
-                              setState(() {
-                                _LB = newValue!;
-                              });
-                            },
-                          ),
-                        ),
-                        Gaps.h8,
-                        const Text(
-                          "LB",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: Sizes.size16,
-                          ),
-                        ),
-                        Gaps.h8,
-                        SizedBox(
-                          width: Sizes.size24,
-                          height: Sizes.size24,
-                          child: Checkbox(
-                            value: _CB,
-                            onChanged: (bool? newValue) {
-                              setState(() {
-                                _CB = newValue!;
-                              });
-                            },
-                          ),
-                        ),
-                        Gaps.h8,
-                        const Text(
-                          "CB",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: Sizes.size16,
-                          ),
-                        ),
-                        Gaps.h8,
-                        SizedBox(
-                          width: Sizes.size24,
-                          height: Sizes.size24,
-                          child: Checkbox(
-                            value: _RB,
-                            onChanged: (bool? newValue) {
-                              setState(() {
-                                _RB = newValue!;
-                              });
-                            },
-                          ),
-                        ),
-                        Gaps.h8,
-                        const Text(
-                          "RB",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: Sizes.size16,
-                          ),
-                        ),
-                        Gaps.h8,
-                        SizedBox(
-                          width: Sizes.size24,
-                          height: Sizes.size24,
-                          child: Checkbox(
-                            value: _RWB,
-                            onChanged: (bool? newValue) {
-                              setState(() {
-                                _RWB = newValue!;
-                              });
-                            },
-                          ),
-                        ),
-                        Gaps.h8,
-                        const Text(
-                          "RWB",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: Sizes.size16,
-                          ),
-                        ),
-                        Gaps.h8,
-                        SizedBox(
-                          width: Sizes.size24,
-                          height: Sizes.size24,
-                          child: Checkbox(
-                            value: _SW,
-                            onChanged: (bool? newValue) {
-                              setState(() {
-                                _SW = newValue!;
-                              });
-                            },
-                          ),
-                        ),
-                        Gaps.h8,
-                        const Text(
-                          "SW",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: Sizes.size16,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Gaps.v12,
-                    Row(children: [
-                      SizedBox(
-                        width: Sizes.size24,
-                        height: Sizes.size24,
-                        child: Checkbox(
-                          value: _GK,
-                          onChanged: (bool? newValue) {
-                            setState(() {
-                              _GK = newValue!;
-                            });
-                          },
-                        ),
-                      ),
-                      Gaps.h8,
-                      const Text(
-                        "GK",
-                        style: TextStyle(
-                          color: Colors.yellow,
-                          fontSize: Sizes.size16,
-                        ),
-                      ),
-                    ]),
                   ],
                 ),
               ),
-            ),
-            Gaps.v12,
-            UiContainer(
-              title: "정렬",
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  SizedBox(
-                    width: Sizes.size96,
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: _sortType,
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            _sortType = newValue!;
-                          });
-                        },
-                        icon: const Icon(
-                          Icons.arrow_drop_down,
-                          color: ThemeColors.primary,
+              Gaps.v16,
+              UiContainer(
+                title: "포지션",
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(children: [
+                        SizedBox(
+                          width: Sizes.size24,
+                          height: Sizes.size24,
+                          child: Checkbox(
+                            value: (store.state).positions["FW"],
+                            onChanged: (bool? newValue) {
+                              store.dispatch(
+                                SearchStateAction(
+                                  type: SearchStateActions.togglePosition,
+                                  payload: "FW",
+                                ),
+                              );
+                              store.dispatch(
+                                SearchStateAction(
+                                  type: SearchStateActions.togglePosition,
+                                  payload: "LW",
+                                ),
+                              );
+                              store.dispatch(
+                                SearchStateAction(
+                                  type: SearchStateActions.togglePosition,
+                                  payload: "ST",
+                                ),
+                              );
+                              store.dispatch(
+                                SearchStateAction(
+                                  type: SearchStateActions.togglePosition,
+                                  payload: "RW",
+                                ),
+                              );
+                              store.dispatch(
+                                SearchStateAction(
+                                  type: SearchStateActions.togglePosition,
+                                  payload: "CF",
+                                ),
+                              );
+                            },
+                          ),
                         ),
-                        dropdownColor: ThemeColors.uiColor,
-                        items: _sortTypes
-                            .map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(
-                              value,
-                              style: const TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: Sizes.size96,
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: _sortType2,
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            _sortType2 = newValue!;
-                          });
-                        },
-                        icon: const Icon(
-                          Icons.arrow_drop_down,
-                          color: ThemeColors.primary,
+                        Gaps.h8,
+                        const Text(
+                          "FW",
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontSize: Sizes.size16,
+                          ),
                         ),
-                        dropdownColor: ThemeColors.uiColor,
-                        items: _sortTypes2
-                            .map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(
-                              value,
-                              style: const TextStyle(
-                                color: Colors.white,
-                              ),
+                      ]),
+                      Gaps.v12,
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: Sizes.size24,
+                            height: Sizes.size24,
+                            child: Checkbox(
+                              value: (store.state).positions["LW"],
+                              onChanged: (bool? newValue) {
+                                store.dispatch(
+                                  SearchStateAction(
+                                    type: SearchStateActions.togglePosition,
+                                    payload: "LW",
+                                  ),
+                                );
+                              },
                             ),
-                          );
-                        }).toList(),
+                          ),
+                          Gaps.h8,
+                          const Text(
+                            "LW",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: Sizes.size16,
+                            ),
+                          ),
+                          Gaps.h8,
+                          SizedBox(
+                            width: Sizes.size24,
+                            height: Sizes.size24,
+                            child: Checkbox(
+                              value: (store.state).positions["ST"],
+                              onChanged: (bool? newValue) {
+                                store.dispatch(
+                                  SearchStateAction(
+                                    type: SearchStateActions.togglePosition,
+                                    payload: "ST",
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          Gaps.h8,
+                          const Text(
+                            "ST",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: Sizes.size16,
+                            ),
+                          ),
+                          Gaps.h8,
+                          SizedBox(
+                            width: Sizes.size24,
+                            height: Sizes.size24,
+                            child: Checkbox(
+                              value: (store.state).positions["RW"],
+                              onChanged: (bool? newValue) {
+                                store.dispatch(
+                                  SearchStateAction(
+                                    type: SearchStateActions.togglePosition,
+                                    payload: "RW",
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          Gaps.h8,
+                          const Text(
+                            "RW",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: Sizes.size16,
+                            ),
+                          ),
+                          Gaps.h8,
+                          SizedBox(
+                            width: Sizes.size24,
+                            height: Sizes.size24,
+                            child: Checkbox(
+                              value: (store.state).positions["CF"],
+                              onChanged: (bool? newValue) {
+                                store.dispatch(
+                                  SearchStateAction(
+                                    type: SearchStateActions.togglePosition,
+                                    payload: "CF",
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          Gaps.h8,
+                          const Text(
+                            "CF",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: Sizes.size16,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
+                      Gaps.v12,
+                      Row(children: [
+                        SizedBox(
+                          width: Sizes.size24,
+                          height: Sizes.size24,
+                          child: Checkbox(
+                            value: (store.state).positions["MF"],
+                            onChanged: (bool? newValue) {
+                              store.dispatch(
+                                SearchStateAction(
+                                  type: SearchStateActions.togglePosition,
+                                  payload: "MF",
+                                ),
+                              );
+                              store.dispatch(
+                                SearchStateAction(
+                                  type: SearchStateActions.togglePosition,
+                                  payload: "CAM",
+                                ),
+                              );
+                              store.dispatch(
+                                SearchStateAction(
+                                  type: SearchStateActions.togglePosition,
+                                  payload: "LM",
+                                ),
+                              );
+                              store.dispatch(
+                                SearchStateAction(
+                                  type: SearchStateActions.togglePosition,
+                                  payload: "CM",
+                                ),
+                              );
+                              store.dispatch(
+                                SearchStateAction(
+                                  type: SearchStateActions.togglePosition,
+                                  payload: "RM",
+                                ),
+                              );
+                              store.dispatch(
+                                SearchStateAction(
+                                  type: SearchStateActions.togglePosition,
+                                  payload: "CDM",
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        Gaps.h8,
+                        const Text(
+                          "MF",
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontSize: Sizes.size16,
+                          ),
+                        ),
+                      ]),
+                      Gaps.v12,
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: Sizes.size24,
+                            height: Sizes.size24,
+                            child: Checkbox(
+                              value: (store.state).positions["CAM"],
+                              onChanged: (bool? newValue) {
+                                store.dispatch(
+                                  SearchStateAction(
+                                    type: SearchStateActions.togglePosition,
+                                    payload: "CAM",
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          Gaps.h8,
+                          const Text(
+                            "CAM",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: Sizes.size16,
+                            ),
+                          ),
+                          Gaps.h8,
+                          SizedBox(
+                            width: Sizes.size24,
+                            height: Sizes.size24,
+                            child: Checkbox(
+                              value: (store.state).positions["LM"],
+                              onChanged: (bool? newValue) {
+                                store.dispatch(
+                                  SearchStateAction(
+                                    type: SearchStateActions.togglePosition,
+                                    payload: "LM",
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          Gaps.h8,
+                          const Text(
+                            "LM",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: Sizes.size16,
+                            ),
+                          ),
+                          Gaps.h8,
+                          SizedBox(
+                            width: Sizes.size24,
+                            height: Sizes.size24,
+                            child: Checkbox(
+                              value: (store.state).positions["CM"],
+                              onChanged: (bool? newValue) {
+                                store.dispatch(
+                                  SearchStateAction(
+                                    type: SearchStateActions.togglePosition,
+                                    payload: "CM",
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          Gaps.h8,
+                          const Text(
+                            "CM",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: Sizes.size16,
+                            ),
+                          ),
+                          Gaps.h8,
+                          SizedBox(
+                            width: Sizes.size24,
+                            height: Sizes.size24,
+                            child: Checkbox(
+                              value: (store.state).positions["RM"],
+                              onChanged: (bool? newValue) {
+                                store.dispatch(
+                                  SearchStateAction(
+                                    type: SearchStateActions.togglePosition,
+                                    payload: "RM",
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          Gaps.h8,
+                          const Text(
+                            "RM",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: Sizes.size16,
+                            ),
+                          ),
+                          Gaps.h8,
+                          SizedBox(
+                            width: Sizes.size24,
+                            height: Sizes.size24,
+                            child: Checkbox(
+                              value: (store.state).positions["CDM"],
+                              onChanged: (bool? newValue) {
+                                store.dispatch(
+                                  SearchStateAction(
+                                    type: SearchStateActions.togglePosition,
+                                    payload: "CDM",
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          Gaps.h8,
+                          const Text(
+                            "CDM",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: Sizes.size16,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Gaps.v12,
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: Sizes.size24,
+                            height: Sizes.size24,
+                            child: Checkbox(
+                              value: (store.state).positions["DF"],
+                              onChanged: (bool? newValue) {
+                                store.dispatch(
+                                  SearchStateAction(
+                                    type: SearchStateActions.togglePosition,
+                                    payload: "DF",
+                                  ),
+                                );
+                                store.dispatch(
+                                  SearchStateAction(
+                                    type: SearchStateActions.togglePosition,
+                                    payload: "LWB",
+                                  ),
+                                );
+                                store.dispatch(
+                                  SearchStateAction(
+                                    type: SearchStateActions.togglePosition,
+                                    payload: "LB",
+                                  ),
+                                );
+                                store.dispatch(
+                                  SearchStateAction(
+                                    type: SearchStateActions.togglePosition,
+                                    payload: "CB",
+                                  ),
+                                );
+                                store.dispatch(
+                                  SearchStateAction(
+                                    type: SearchStateActions.togglePosition,
+                                    payload: "RB",
+                                  ),
+                                );
+                                store.dispatch(
+                                  SearchStateAction(
+                                    type: SearchStateActions.togglePosition,
+                                    payload: "RWB",
+                                  ),
+                                );
+                                store.dispatch(
+                                  SearchStateAction(
+                                    type: SearchStateActions.togglePosition,
+                                    payload: "SW",
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          Gaps.h8,
+                          const Text(
+                            "DF",
+                            style: TextStyle(
+                              color: Colors.blue,
+                              fontSize: Sizes.size16,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Gaps.v12,
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: Sizes.size24,
+                            height: Sizes.size24,
+                            child: Checkbox(
+                              value: (store.state).positions["LWB"],
+                              onChanged: (bool? newValue) {
+                                store.dispatch(
+                                  SearchStateAction(
+                                    type: SearchStateActions.togglePosition,
+                                    payload: "LWB",
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          Gaps.h8,
+                          const Text(
+                            "LWB",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: Sizes.size16,
+                            ),
+                          ),
+                          Gaps.h8,
+                          SizedBox(
+                            width: Sizes.size24,
+                            height: Sizes.size24,
+                            child: Checkbox(
+                              value: (store.state).positions["LB"],
+                              onChanged: (bool? newValue) {
+                                store.dispatch(
+                                  SearchStateAction(
+                                    type: SearchStateActions.togglePosition,
+                                    payload: "LB",
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          Gaps.h8,
+                          const Text(
+                            "LB",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: Sizes.size16,
+                            ),
+                          ),
+                          Gaps.h8,
+                          SizedBox(
+                            width: Sizes.size24,
+                            height: Sizes.size24,
+                            child: Checkbox(
+                              value: (store.state).positions["CB"],
+                              onChanged: (bool? newValue) {
+                                store.dispatch(
+                                  SearchStateAction(
+                                    type: SearchStateActions.togglePosition,
+                                    payload: "CB",
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          Gaps.h8,
+                          const Text(
+                            "CB",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: Sizes.size16,
+                            ),
+                          ),
+                          Gaps.h8,
+                          SizedBox(
+                            width: Sizes.size24,
+                            height: Sizes.size24,
+                            child: Checkbox(
+                              value: (store.state).positions["RB"],
+                              onChanged: (bool? newValue) {
+                                store.dispatch(
+                                  SearchStateAction(
+                                    type: SearchStateActions.togglePosition,
+                                    payload: "RB",
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          Gaps.h8,
+                          const Text(
+                            "RB",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: Sizes.size16,
+                            ),
+                          ),
+                          Gaps.h8,
+                          SizedBox(
+                            width: Sizes.size24,
+                            height: Sizes.size24,
+                            child: Checkbox(
+                              value: (store.state).positions["RWB"],
+                              onChanged: (bool? newValue) {
+                                store.dispatch(
+                                  SearchStateAction(
+                                    type: SearchStateActions.togglePosition,
+                                    payload: "RWB",
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          Gaps.h8,
+                          const Text(
+                            "RWB",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: Sizes.size16,
+                            ),
+                          ),
+                          Gaps.h8,
+                          SizedBox(
+                            width: Sizes.size24,
+                            height: Sizes.size24,
+                            child: Checkbox(
+                              value: (store.state).positions["SW"],
+                              onChanged: (bool? newValue) {
+                                store.dispatch(
+                                  SearchStateAction(
+                                    type: SearchStateActions.togglePosition,
+                                    payload: "SW",
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          Gaps.h8,
+                          const Text(
+                            "SW",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: Sizes.size16,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Gaps.v12,
+                      Row(children: [
+                        SizedBox(
+                          width: Sizes.size24,
+                          height: Sizes.size24,
+                          child: Checkbox(
+                            value: (store.state).positions["GK"],
+                            onChanged: (bool? newValue) {
+                              store.dispatch(
+                                SearchStateAction(
+                                  type: SearchStateActions.togglePosition,
+                                  payload: "GK",
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        Gaps.h8,
+                        const Text(
+                          "GK",
+                          style: TextStyle(
+                            color: Colors.yellow,
+                            fontSize: Sizes.size16,
+                          ),
+                        ),
+                      ]),
+                      Gaps.v4,
+                    ],
                   ),
-                ],
+                ),
               ),
-            )
-          ],
+              Gaps.v12,
+              UiContainer(
+                title: "정렬",
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    SizedBox(
+                      width: Sizes.size96,
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: _sortTypes1[(store.state).sortType1],
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              store.dispatch(SearchStateAction(
+                                type: SearchStateActions.setSortType1,
+                                payload: _sortTypes1.indexOf(newValue!),
+                              ));
+                            });
+                          },
+                          icon: const Icon(
+                            Icons.arrow_drop_down,
+                            color: ThemeColors.primary,
+                          ),
+                          dropdownColor: ThemeColors.uiColor,
+                          items: _sortTypes1
+                              .map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(
+                                value,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: Sizes.size96,
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: _sortTypes2[(store.state).sortType2],
+                          onChanged: (String? newValue) {
+                            store.dispatch(SearchStateAction(
+                              type: SearchStateActions.setSortType2,
+                              payload: _sortTypes2.indexOf(newValue!),
+                            ));
+                          },
+                          icon: const Icon(
+                            Icons.arrow_drop_down,
+                            color: ThemeColors.primary,
+                          ),
+                          dropdownColor: ThemeColors.uiColor,
+                          items: _sortTypes2
+                              .map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(
+                                value,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Gaps.v24,
+            ],
+          ),
         ),
       ),
     );
@@ -701,10 +772,14 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
 
 class PlayerClass extends StatefulWidget {
   final String className;
+  final bool isSelected;
+  final Store<SearchConditionsState> store;
 
   const PlayerClass({
     super.key,
     required this.className,
+    required this.isSelected,
+    required this.store,
   });
 
   @override
@@ -714,16 +789,17 @@ class PlayerClass extends StatefulWidget {
 class PlayerClassState extends State<PlayerClass> {
   bool _isSelected = true;
 
-  void toggleSelected() {
-    setState(() {
-      _isSelected = !_isSelected;
-    });
+  @override
+  void initState() {
+    super.initState();
+    _isSelected = widget.isSelected;
   }
 
-  void setSelected(bool newValue) {
-    setState(() {
-      _isSelected = newValue;
-    });
+  void toggleSelected() {
+    widget.store.dispatch(SearchStateAction(
+      type: SearchStateActions.toggleClass,
+      payload: widget.className,
+    ));
   }
 
   @override

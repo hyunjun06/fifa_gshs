@@ -16,10 +16,6 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   int _currentPage = 0;
   late final PageController _pageController;
-  final screens = [
-    const SearchConditionsScreen(),
-    const SearchResultsScreen(),
-  ];
 
   @override
   void initState() {
@@ -128,9 +124,9 @@ class _SearchScreenState extends State<SearchScreen> {
                 child: PageView.builder(
                   controller: _pageController,
                   itemCount: 2,
-                  itemBuilder: (context, index) {
-                    return screens[index];
-                  },
+                  itemBuilder: (context, index) => index == 0
+                      ? const SearchConditionsScreen()
+                      : const SearchResultsScreen(),
                 ),
               ),
             ],

@@ -1,49 +1,60 @@
 import 'package:fifa_gshs/constants/theme_colors.dart';
 import 'package:fifa_gshs/screens/main_page.dart';
+import 'package:fifa_gshs/states/search_conditions_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:redux/redux.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(App());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class App extends StatelessWidget {
+  final searchConditionsStore = Store<SearchConditionsState>(
+    searchConditionsReducer,
+    initialState: SearchConditionsState.initial(),
+  );
+
+  App({super.key});
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: '경곽북',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSwatch().copyWith(
-          primary: ThemeColors.primary,
-          background: ThemeColors.bgColor,
-        ),
-        fontFamily: 'Suite',
-        checkboxTheme: CheckboxThemeData(
-          fillColor: MaterialStateProperty.resolveWith<Color?>(
-              (Set<MaterialState> states) {
-            if (states.contains(MaterialState.disabled)) {
+    return StoreProvider<SearchConditionsState>(
+      store: searchConditionsStore,
+      child: MaterialApp(
+        title: '경곽북',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSwatch().copyWith(
+            primary: ThemeColors.primary,
+            background: ThemeColors.bgColor,
+          ),
+          fontFamily: 'Suite',
+          checkboxTheme: CheckboxThemeData(
+            fillColor: MaterialStateProperty.resolveWith<Color?>(
+                (Set<MaterialState> states) {
+              if (states.contains(MaterialState.disabled)) {
+                return null;
+              }
+              if (states.contains(MaterialState.selected)) {
+                return ThemeColors.primary;
+              }
               return null;
-            }
-            if (states.contains(MaterialState.selected)) {
-              return ThemeColors.primary;
-            }
-            return null;
-          }),
-          checkColor: MaterialStateProperty.resolveWith<Color?>(
-              (Set<MaterialState> states) {
-            if (states.contains(MaterialState.disabled)) {
+            }),
+            checkColor: MaterialStateProperty.resolveWith<Color?>(
+                (Set<MaterialState> states) {
+              if (states.contains(MaterialState.disabled)) {
+                return null;
+              }
+              if (states.contains(MaterialState.selected)) {
+                return ThemeColors.uiColor;
+              }
               return null;
-            }
-            if (states.contains(MaterialState.selected)) {
-              return ThemeColors.uiColor;
-            }
-            return null;
-          }),
+            }),
+          ),
         ),
+        home: const MainPage(),
       ),
-      home: const MainPage(),
     );
   }
 }
