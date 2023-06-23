@@ -1,12 +1,15 @@
 import 'package:fifa_gshs/constants/theme_colors.dart';
-import 'package:fifa_gshs/states/search_conditions_state.dart';
+import 'package:fifa_gshs/screens/screens/widgets/custom_grid.dart';
+import 'package:fifa_gshs/screens/screens/widgets/player_class.dart';
+import 'package:fifa_gshs/screens/screens/widgets/ui_container.dart';
+import 'package:fifa_gshs/states/view_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:redux/redux.dart';
 
-import '../constants/gaps.dart';
-import '../constants/sizes.dart';
+import '../../constants/gaps.dart';
+import '../../constants/sizes.dart';
+import '../../states/search_conditions_state.dart';
 
 class SearchConditionsScreen extends StatefulWidget {
   const SearchConditionsScreen({super.key});
@@ -16,7 +19,6 @@ class SearchConditionsScreen extends StatefulWidget {
 }
 
 class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
-  final _sortTypes1 = ["오버롤"], _sortTypes2 = ["높은순", "낮은순"];
   bool _isClassAllSelect = true;
 
   @override
@@ -32,14 +34,25 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return StoreBuilder(
-      builder: (_, Store<SearchConditionsState> store) => Padding(
-        padding: const EdgeInsets.all(Sizes.size10),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              UiContainer(
+    return Padding(
+      padding: const EdgeInsets.all(Sizes.size10),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            StoreConnector<SearchConditionsState,
+                void Function(SearchStateAction)>(
+              rebuildOnChange: false,
+              converter: (store) => store.dispatch,
+              builder: (_, dispatch) => UiContainer(
                 child: TextField(
+                  onChanged: (value) {
+                    dispatch(
+                      SearchStateAction(
+                        type: SearchStateActions.setNameFilters,
+                        payload: value.split(",").map((e) => e.trim()).toList(),
+                      ),
+                    );
+                  },
                   decoration: InputDecoration(
                     isDense: true,
                     prefixIcon: const Padding(
@@ -67,8 +80,17 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                   ),
                 ),
               ),
-              Gaps.v16,
-              UiContainer(
+            ),
+            Gaps.v16,
+            StoreConnector<SearchConditionsState, ClassViewModel>(
+              distinct: true,
+              rebuildOnChange: true,
+              converter: (store) => ClassViewModel(
+                classNames: store.state.classNames,
+                classValues: store.state.classValues,
+                dispatch: store.dispatch,
+              ),
+              builder: (_, viewModel) => UiContainer(
                 title: "클래스",
                 child: Column(
                   children: [
@@ -95,19 +117,29 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                     CustomGrid(
                       itemWidth: Sizes.size48,
                       children: List.generate(
-                        (store.state).classNames.length,
-                        (index) => PlayerClass(
-                          className: (store.state).classNames[index],
-                          isSelected: (store.state).classValues[index],
-                          store: store,
-                        ),
+                        viewModel.classNames.length,
+                        (index) {
+                          return PlayerClass(
+                            className: viewModel.classNames[index],
+                            isSelected: viewModel.classValues[index],
+                            dispatch: viewModel.dispatch,
+                            index: index,
+                          );
+                        },
                       ),
                     ),
                   ],
                 ),
               ),
-              Gaps.v16,
-              UiContainer(
+            ),
+            Gaps.v16,
+            StoreConnector<SearchConditionsState, PositionViewModel>(
+              distinct: true,
+              converter: (store) => PositionViewModel(
+                positions: store.state.positions,
+                dispatch: store.dispatch,
+              ),
+              builder: (_, viewModel) => UiContainer(
                 title: "포지션",
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -119,36 +151,51 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                           width: Sizes.size24,
                           height: Sizes.size24,
                           child: Checkbox(
-                            value: (store.state).positions["FW"],
+                            value: viewModel.positions["FW"],
                             onChanged: (bool? newValue) {
-                              store.dispatch(
+                              viewModel.dispatch(
                                 SearchStateAction(
-                                  type: SearchStateActions.togglePosition,
-                                  payload: "FW",
+                                  type: SearchStateActions.setPositionValue,
+                                  payload: PositionPayload(
+                                    position: "FW",
+                                    value: newValue!,
+                                  ),
                                 ),
                               );
-                              store.dispatch(
+                              viewModel.dispatch(
                                 SearchStateAction(
-                                  type: SearchStateActions.togglePosition,
-                                  payload: "LW",
+                                  type: SearchStateActions.setPositionValue,
+                                  payload: PositionPayload(
+                                    position: "LW",
+                                    value: newValue,
+                                  ),
                                 ),
                               );
-                              store.dispatch(
+                              viewModel.dispatch(
                                 SearchStateAction(
-                                  type: SearchStateActions.togglePosition,
-                                  payload: "ST",
+                                  type: SearchStateActions.setPositionValue,
+                                  payload: PositionPayload(
+                                    position: "ST",
+                                    value: newValue,
+                                  ),
                                 ),
                               );
-                              store.dispatch(
+                              viewModel.dispatch(
                                 SearchStateAction(
-                                  type: SearchStateActions.togglePosition,
-                                  payload: "RW",
+                                  type: SearchStateActions.setPositionValue,
+                                  payload: PositionPayload(
+                                    position: "RW",
+                                    value: newValue,
+                                  ),
                                 ),
                               );
-                              store.dispatch(
+                              viewModel.dispatch(
                                 SearchStateAction(
-                                  type: SearchStateActions.togglePosition,
-                                  payload: "CF",
+                                  type: SearchStateActions.setPositionValue,
+                                  payload: PositionPayload(
+                                    position: "CF",
+                                    value: newValue,
+                                  ),
                                 ),
                               );
                             },
@@ -170,12 +217,15 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                             width: Sizes.size24,
                             height: Sizes.size24,
                             child: Checkbox(
-                              value: (store.state).positions["LW"],
+                              value: viewModel.positions["LW"],
                               onChanged: (bool? newValue) {
-                                store.dispatch(
+                                viewModel.dispatch(
                                   SearchStateAction(
-                                    type: SearchStateActions.togglePosition,
-                                    payload: "LW",
+                                    type: SearchStateActions.setPositionValue,
+                                    payload: PositionPayload(
+                                      position: "LW",
+                                      value: newValue!,
+                                    ),
                                   ),
                                 );
                               },
@@ -194,12 +244,15 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                             width: Sizes.size24,
                             height: Sizes.size24,
                             child: Checkbox(
-                              value: (store.state).positions["ST"],
+                              value: viewModel.positions["ST"],
                               onChanged: (bool? newValue) {
-                                store.dispatch(
+                                viewModel.dispatch(
                                   SearchStateAction(
-                                    type: SearchStateActions.togglePosition,
-                                    payload: "ST",
+                                    type: SearchStateActions.setPositionValue,
+                                    payload: PositionPayload(
+                                      position: "ST",
+                                      value: newValue!,
+                                    ),
                                   ),
                                 );
                               },
@@ -218,12 +271,15 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                             width: Sizes.size24,
                             height: Sizes.size24,
                             child: Checkbox(
-                              value: (store.state).positions["RW"],
+                              value: viewModel.positions["RW"],
                               onChanged: (bool? newValue) {
-                                store.dispatch(
+                                viewModel.dispatch(
                                   SearchStateAction(
-                                    type: SearchStateActions.togglePosition,
-                                    payload: "RW",
+                                    type: SearchStateActions.setPositionValue,
+                                    payload: PositionPayload(
+                                      position: "RW",
+                                      value: newValue!,
+                                    ),
                                   ),
                                 );
                               },
@@ -242,12 +298,15 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                             width: Sizes.size24,
                             height: Sizes.size24,
                             child: Checkbox(
-                              value: (store.state).positions["CF"],
+                              value: viewModel.positions["CF"],
                               onChanged: (bool? newValue) {
-                                store.dispatch(
+                                viewModel.dispatch(
                                   SearchStateAction(
-                                    type: SearchStateActions.togglePosition,
-                                    payload: "CF",
+                                    type: SearchStateActions.setPositionValue,
+                                    payload: PositionPayload(
+                                      position: "CF",
+                                      value: newValue!,
+                                    ),
                                   ),
                                 );
                               },
@@ -269,42 +328,60 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                           width: Sizes.size24,
                           height: Sizes.size24,
                           child: Checkbox(
-                            value: (store.state).positions["MF"],
+                            value: viewModel.positions["MF"],
                             onChanged: (bool? newValue) {
-                              store.dispatch(
+                              viewModel.dispatch(
                                 SearchStateAction(
-                                  type: SearchStateActions.togglePosition,
-                                  payload: "MF",
+                                  type: SearchStateActions.setPositionValue,
+                                  payload: PositionPayload(
+                                    position: "MF",
+                                    value: newValue!,
+                                  ),
                                 ),
                               );
-                              store.dispatch(
+                              viewModel.dispatch(
                                 SearchStateAction(
-                                  type: SearchStateActions.togglePosition,
-                                  payload: "CAM",
+                                  type: SearchStateActions.setPositionValue,
+                                  payload: PositionPayload(
+                                    position: "CAM",
+                                    value: newValue,
+                                  ),
                                 ),
                               );
-                              store.dispatch(
+                              viewModel.dispatch(
                                 SearchStateAction(
-                                  type: SearchStateActions.togglePosition,
-                                  payload: "LM",
+                                  type: SearchStateActions.setPositionValue,
+                                  payload: PositionPayload(
+                                    position: "LM",
+                                    value: newValue,
+                                  ),
                                 ),
                               );
-                              store.dispatch(
+                              viewModel.dispatch(
                                 SearchStateAction(
-                                  type: SearchStateActions.togglePosition,
-                                  payload: "CM",
+                                  type: SearchStateActions.setPositionValue,
+                                  payload: PositionPayload(
+                                    position: "CM",
+                                    value: newValue,
+                                  ),
                                 ),
                               );
-                              store.dispatch(
+                              viewModel.dispatch(
                                 SearchStateAction(
-                                  type: SearchStateActions.togglePosition,
-                                  payload: "RM",
+                                  type: SearchStateActions.setPositionValue,
+                                  payload: PositionPayload(
+                                    position: "RM",
+                                    value: newValue,
+                                  ),
                                 ),
                               );
-                              store.dispatch(
+                              viewModel.dispatch(
                                 SearchStateAction(
-                                  type: SearchStateActions.togglePosition,
-                                  payload: "CDM",
+                                  type: SearchStateActions.setPositionValue,
+                                  payload: PositionPayload(
+                                    position: "CDM",
+                                    value: newValue,
+                                  ),
                                 ),
                               );
                             },
@@ -326,12 +403,15 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                             width: Sizes.size24,
                             height: Sizes.size24,
                             child: Checkbox(
-                              value: (store.state).positions["CAM"],
+                              value: viewModel.positions["CAM"],
                               onChanged: (bool? newValue) {
-                                store.dispatch(
+                                viewModel.dispatch(
                                   SearchStateAction(
-                                    type: SearchStateActions.togglePosition,
-                                    payload: "CAM",
+                                    type: SearchStateActions.setPositionValue,
+                                    payload: PositionPayload(
+                                      position: "CAM",
+                                      value: newValue!,
+                                    ),
                                   ),
                                 );
                               },
@@ -350,12 +430,15 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                             width: Sizes.size24,
                             height: Sizes.size24,
                             child: Checkbox(
-                              value: (store.state).positions["LM"],
+                              value: viewModel.positions["LM"],
                               onChanged: (bool? newValue) {
-                                store.dispatch(
+                                viewModel.dispatch(
                                   SearchStateAction(
-                                    type: SearchStateActions.togglePosition,
-                                    payload: "LM",
+                                    type: SearchStateActions.setPositionValue,
+                                    payload: PositionPayload(
+                                      position: "LM",
+                                      value: newValue!,
+                                    ),
                                   ),
                                 );
                               },
@@ -374,12 +457,15 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                             width: Sizes.size24,
                             height: Sizes.size24,
                             child: Checkbox(
-                              value: (store.state).positions["CM"],
+                              value: viewModel.positions["CM"],
                               onChanged: (bool? newValue) {
-                                store.dispatch(
+                                viewModel.dispatch(
                                   SearchStateAction(
-                                    type: SearchStateActions.togglePosition,
-                                    payload: "CM",
+                                    type: SearchStateActions.setPositionValue,
+                                    payload: PositionPayload(
+                                      position: "CM",
+                                      value: newValue!,
+                                    ),
                                   ),
                                 );
                               },
@@ -398,12 +484,15 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                             width: Sizes.size24,
                             height: Sizes.size24,
                             child: Checkbox(
-                              value: (store.state).positions["RM"],
+                              value: viewModel.positions["RM"],
                               onChanged: (bool? newValue) {
-                                store.dispatch(
+                                viewModel.dispatch(
                                   SearchStateAction(
-                                    type: SearchStateActions.togglePosition,
-                                    payload: "RM",
+                                    type: SearchStateActions.setPositionValue,
+                                    payload: PositionPayload(
+                                      position: "RM",
+                                      value: newValue!,
+                                    ),
                                   ),
                                 );
                               },
@@ -422,12 +511,15 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                             width: Sizes.size24,
                             height: Sizes.size24,
                             child: Checkbox(
-                              value: (store.state).positions["CDM"],
+                              value: viewModel.positions["CDM"],
                               onChanged: (bool? newValue) {
-                                store.dispatch(
+                                viewModel.dispatch(
                                   SearchStateAction(
-                                    type: SearchStateActions.togglePosition,
-                                    payload: "CDM",
+                                    type: SearchStateActions.setPositionValue,
+                                    payload: PositionPayload(
+                                      position: "CDM",
+                                      value: newValue!,
+                                    ),
                                   ),
                                 );
                               },
@@ -450,48 +542,69 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                             width: Sizes.size24,
                             height: Sizes.size24,
                             child: Checkbox(
-                              value: (store.state).positions["DF"],
+                              value: viewModel.positions["DF"],
                               onChanged: (bool? newValue) {
-                                store.dispatch(
+                                viewModel.dispatch(
                                   SearchStateAction(
-                                    type: SearchStateActions.togglePosition,
-                                    payload: "DF",
+                                    type: SearchStateActions.setPositionValue,
+                                    payload: PositionPayload(
+                                      position: "DF",
+                                      value: newValue!,
+                                    ),
                                   ),
                                 );
-                                store.dispatch(
+                                viewModel.dispatch(
                                   SearchStateAction(
-                                    type: SearchStateActions.togglePosition,
-                                    payload: "LWB",
+                                    type: SearchStateActions.setPositionValue,
+                                    payload: PositionPayload(
+                                      position: "LWB",
+                                      value: newValue,
+                                    ),
                                   ),
                                 );
-                                store.dispatch(
+                                viewModel.dispatch(
                                   SearchStateAction(
-                                    type: SearchStateActions.togglePosition,
-                                    payload: "LB",
+                                    type: SearchStateActions.setPositionValue,
+                                    payload: PositionPayload(
+                                      position: "LB",
+                                      value: newValue,
+                                    ),
                                   ),
                                 );
-                                store.dispatch(
+                                viewModel.dispatch(
                                   SearchStateAction(
-                                    type: SearchStateActions.togglePosition,
-                                    payload: "CB",
+                                    type: SearchStateActions.setPositionValue,
+                                    payload: PositionPayload(
+                                      position: "CB",
+                                      value: newValue,
+                                    ),
                                   ),
                                 );
-                                store.dispatch(
+                                viewModel.dispatch(
                                   SearchStateAction(
-                                    type: SearchStateActions.togglePosition,
-                                    payload: "RB",
+                                    type: SearchStateActions.setPositionValue,
+                                    payload: PositionPayload(
+                                      position: "RB",
+                                      value: newValue,
+                                    ),
                                   ),
                                 );
-                                store.dispatch(
+                                viewModel.dispatch(
                                   SearchStateAction(
-                                    type: SearchStateActions.togglePosition,
-                                    payload: "RWB",
+                                    type: SearchStateActions.setPositionValue,
+                                    payload: PositionPayload(
+                                      position: "RWB",
+                                      value: newValue,
+                                    ),
                                   ),
                                 );
-                                store.dispatch(
+                                viewModel.dispatch(
                                   SearchStateAction(
-                                    type: SearchStateActions.togglePosition,
-                                    payload: "SW",
+                                    type: SearchStateActions.setPositionValue,
+                                    payload: PositionPayload(
+                                      position: "SW",
+                                      value: newValue,
+                                    ),
                                   ),
                                 );
                               },
@@ -514,12 +627,15 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                             width: Sizes.size24,
                             height: Sizes.size24,
                             child: Checkbox(
-                              value: (store.state).positions["LWB"],
+                              value: viewModel.positions["LWB"],
                               onChanged: (bool? newValue) {
-                                store.dispatch(
+                                viewModel.dispatch(
                                   SearchStateAction(
-                                    type: SearchStateActions.togglePosition,
-                                    payload: "LWB",
+                                    type: SearchStateActions.setPositionValue,
+                                    payload: PositionPayload(
+                                      position: "LWB",
+                                      value: newValue!,
+                                    ),
                                   ),
                                 );
                               },
@@ -538,12 +654,15 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                             width: Sizes.size24,
                             height: Sizes.size24,
                             child: Checkbox(
-                              value: (store.state).positions["LB"],
+                              value: viewModel.positions["LB"],
                               onChanged: (bool? newValue) {
-                                store.dispatch(
+                                viewModel.dispatch(
                                   SearchStateAction(
-                                    type: SearchStateActions.togglePosition,
-                                    payload: "LB",
+                                    type: SearchStateActions.setPositionValue,
+                                    payload: PositionPayload(
+                                      position: "LB",
+                                      value: newValue!,
+                                    ),
                                   ),
                                 );
                               },
@@ -562,12 +681,15 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                             width: Sizes.size24,
                             height: Sizes.size24,
                             child: Checkbox(
-                              value: (store.state).positions["CB"],
+                              value: viewModel.positions["CB"],
                               onChanged: (bool? newValue) {
-                                store.dispatch(
+                                viewModel.dispatch(
                                   SearchStateAction(
-                                    type: SearchStateActions.togglePosition,
-                                    payload: "CB",
+                                    type: SearchStateActions.setPositionValue,
+                                    payload: PositionPayload(
+                                      position: "CB",
+                                      value: newValue!,
+                                    ),
                                   ),
                                 );
                               },
@@ -586,12 +708,15 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                             width: Sizes.size24,
                             height: Sizes.size24,
                             child: Checkbox(
-                              value: (store.state).positions["RB"],
+                              value: viewModel.positions["RB"],
                               onChanged: (bool? newValue) {
-                                store.dispatch(
+                                viewModel.dispatch(
                                   SearchStateAction(
-                                    type: SearchStateActions.togglePosition,
-                                    payload: "RB",
+                                    type: SearchStateActions.setPositionValue,
+                                    payload: PositionPayload(
+                                      position: "RB",
+                                      value: newValue!,
+                                    ),
                                   ),
                                 );
                               },
@@ -610,12 +735,15 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                             width: Sizes.size24,
                             height: Sizes.size24,
                             child: Checkbox(
-                              value: (store.state).positions["RWB"],
+                              value: viewModel.positions["RWB"],
                               onChanged: (bool? newValue) {
-                                store.dispatch(
+                                viewModel.dispatch(
                                   SearchStateAction(
-                                    type: SearchStateActions.togglePosition,
-                                    payload: "RWB",
+                                    type: SearchStateActions.setPositionValue,
+                                    payload: PositionPayload(
+                                      position: "RWB",
+                                      value: newValue!,
+                                    ),
                                   ),
                                 );
                               },
@@ -634,12 +762,15 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                             width: Sizes.size24,
                             height: Sizes.size24,
                             child: Checkbox(
-                              value: (store.state).positions["SW"],
+                              value: viewModel.positions["SW"],
                               onChanged: (bool? newValue) {
-                                store.dispatch(
+                                viewModel.dispatch(
                                   SearchStateAction(
-                                    type: SearchStateActions.togglePosition,
-                                    payload: "SW",
+                                    type: SearchStateActions.setPositionValue,
+                                    payload: PositionPayload(
+                                      position: "SW",
+                                      value: newValue!,
+                                    ),
                                   ),
                                 );
                               },
@@ -661,12 +792,15 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                           width: Sizes.size24,
                           height: Sizes.size24,
                           child: Checkbox(
-                            value: (store.state).positions["GK"],
+                            value: viewModel.positions["GK"],
                             onChanged: (bool? newValue) {
-                              store.dispatch(
+                              viewModel.dispatch(
                                 SearchStateAction(
-                                  type: SearchStateActions.togglePosition,
-                                  payload: "GK",
+                                  type: SearchStateActions.setPositionValue,
+                                  payload: PositionPayload(
+                                    position: "GK",
+                                    value: newValue!,
+                                  ),
                                 ),
                               );
                             },
@@ -686,8 +820,16 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                   ),
                 ),
               ),
-              Gaps.v12,
-              UiContainer(
+            ),
+            Gaps.v12,
+            StoreConnector<SearchConditionsState, SortTypeViewModel>(
+              distinct: true,
+              converter: (store) => SortTypeViewModel(
+                sortType1: store.state.sortType1,
+                sortType2: store.state.sortType2,
+                dispatch: store.dispatch,
+              ),
+              builder: (_, viewModel) => UiContainer(
                 title: "정렬",
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -697,12 +839,14 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
                           isExpanded: true,
-                          value: _sortTypes1[(store.state).sortType1],
+                          value: SearchConditionsState
+                              .sortTypes1[viewModel.sortType1],
                           onChanged: (String? newValue) {
                             setState(() {
-                              store.dispatch(SearchStateAction(
+                              viewModel.dispatch(SearchStateAction(
                                 type: SearchStateActions.setSortType1,
-                                payload: _sortTypes1.indexOf(newValue!),
+                                payload: SearchConditionsState.sortTypes1
+                                    .indexOf(newValue!),
                               ));
                             });
                           },
@@ -711,7 +855,7 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                             color: ThemeColors.primary,
                           ),
                           dropdownColor: ThemeColors.uiColor,
-                          items: _sortTypes1
+                          items: SearchConditionsState.sortTypes1
                               .map<DropdownMenuItem<String>>((String value) {
                             return DropdownMenuItem<String>(
                               value: value,
@@ -731,11 +875,13 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
                           isExpanded: true,
-                          value: _sortTypes2[(store.state).sortType2],
+                          value: SearchConditionsState
+                              .sortTypes2[viewModel.sortType2],
                           onChanged: (String? newValue) {
-                            store.dispatch(SearchStateAction(
+                            viewModel.dispatch(SearchStateAction(
                               type: SearchStateActions.setSortType2,
-                              payload: _sortTypes2.indexOf(newValue!),
+                              payload: SearchConditionsState.sortTypes2
+                                  .indexOf(newValue!),
                             ));
                           },
                           icon: const Icon(
@@ -743,7 +889,7 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                             color: ThemeColors.primary,
                           ),
                           dropdownColor: ThemeColors.uiColor,
-                          items: _sortTypes2
+                          items: SearchConditionsState.sortTypes2
                               .map<DropdownMenuItem<String>>((String value) {
                             return DropdownMenuItem<String>(
                               value: value,
@@ -761,147 +907,11 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                   ],
                 ),
               ),
-              Gaps.v24,
-            ],
-          ),
+            ),
+            Gaps.v24,
+          ],
         ),
       ),
-    );
-  }
-}
-
-class PlayerClass extends StatefulWidget {
-  final String className;
-  final bool isSelected;
-  final Store<SearchConditionsState> store;
-
-  const PlayerClass({
-    super.key,
-    required this.className,
-    required this.isSelected,
-    required this.store,
-  });
-
-  @override
-  State<PlayerClass> createState() => PlayerClassState();
-}
-
-class PlayerClassState extends State<PlayerClass> {
-  bool _isSelected = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _isSelected = widget.isSelected;
-  }
-
-  void toggleSelected() {
-    widget.store.dispatch(SearchStateAction(
-      type: SearchStateActions.toggleClass,
-      payload: widget.className,
-    ));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedOpacity(
-      opacity: _isSelected ? 1 : 0.5,
-      duration: const Duration(milliseconds: 200),
-      child: GestureDetector(
-        onTap: toggleSelected,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: Sizes.size4),
-          child: Column(
-            children: [
-              Image.asset("assets/classes/${widget.className}.png",
-                  width: Sizes.size36),
-              Gaps.v8,
-              Text(
-                widget.className,
-                style: TextStyle(
-                  color: Colors.grey.shade300,
-                  fontSize: Sizes.size12,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class UiContainer extends StatelessWidget {
-  final String? title;
-  final Widget child;
-
-  const UiContainer({super.key, required this.child, this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Container(
-        decoration: BoxDecoration(
-          color: ThemeColors.uiColor,
-          borderRadius: BorderRadius.circular(Sizes.size4),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(Sizes.size10),
-          child: title == null
-              ? child
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title!,
-                      style: const TextStyle(
-                        color: ThemeColors.primary,
-                        fontSize: Sizes.size16,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    Gaps.v10,
-                    child,
-                  ],
-                ),
-        ),
-      ),
-    );
-  }
-}
-
-class CustomGrid extends StatelessWidget {
-  final double itemWidth;
-  final List<Widget> children;
-
-  const CustomGrid({
-    required this.itemWidth,
-    required this.children,
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        final crossAxisCount = (constraints.maxWidth / itemWidth).floor();
-        final availableWidth =
-            constraints.maxWidth - (crossAxisCount * itemWidth);
-        final padding = availableWidth / (crossAxisCount - 1);
-
-        return Wrap(
-          alignment: WrapAlignment.start,
-          spacing: padding,
-          runSpacing: padding,
-          children: children.map((child) {
-            return SizedBox(
-              width: itemWidth,
-              child: child,
-            );
-          }).toList(),
-        );
-      },
     );
   }
 }

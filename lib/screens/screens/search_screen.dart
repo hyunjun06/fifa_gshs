@@ -1,10 +1,9 @@
 import 'package:fifa_gshs/constants/theme_colors.dart';
-import 'package:fifa_gshs/screens/search_conditions_screen.dart';
-import 'package:fifa_gshs/screens/search_results_screen.dart';
+import 'package:fifa_gshs/screens/screens/search_conditions_screen.dart';
+import 'package:fifa_gshs/screens/screens/search_results_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import '../constants/sizes.dart';
+import '../../constants/sizes.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -28,27 +27,16 @@ class _SearchScreenState extends State<SearchScreen> {
       });
   }
 
-  // TODO: loading, reloading
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              '선수 검색',
-              style: TextStyle(
-                color: Colors.grey.shade900,
-                fontSize: Sizes.size16 + Sizes.size2,
-              ),
-            ),
-            FaIcon(
-              FontAwesomeIcons.rotate,
-              color: Colors.grey.shade900,
-              size: Sizes.size16 + Sizes.size2,
-            ),
-          ],
+        title: Text(
+          '선수 검색',
+          style: TextStyle(
+            color: Colors.grey.shade900,
+            fontSize: Sizes.size16 + Sizes.size2,
+          ),
         ),
         backgroundColor: ThemeColors.titleBgColor,
         elevation: 0,
