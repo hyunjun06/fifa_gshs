@@ -33,8 +33,8 @@ class PlayerClassState extends State<PlayerClass> {
 
   void toggleSelected() {
     widget.dispatch(SearchStateAction(
-      type: SearchStateActions.toggleClass,
-      payload: widget.index,
+      type: SearchStateActions.setClassValue,
+      payload: {"index": widget.index, "value": !_isSelected},
     ));
   }
 

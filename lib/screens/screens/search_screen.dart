@@ -113,7 +113,9 @@ class _SearchScreenState extends State<SearchScreen> {
                   controller: _pageController,
                   itemCount: 2,
                   itemBuilder: (context, index) => index == 0
-                      ? const SearchConditionsScreen()
+                      ? SearchConditionsScreen(
+                          pageController: _pageController,
+                        )
                       : const SearchResultsScreen(),
                 ),
               ),

@@ -100,11 +100,17 @@ class _PlayerListState extends State<PlayerList> {
       value["name"] = key;
       _playerData.add(value);
     });
+
     _playerData.sort((a, b) {
+      dynamic aValue = a[widget.sortType1];
+      aValue = double.tryParse(aValue) == null ? aValue : double.parse(aValue);
+      dynamic bValue = b[widget.sortType1];
+      bValue = double.tryParse(bValue) == null ? bValue : double.parse(bValue);
+
       if (widget.sortType2 == 0) {
-        return b[widget.sortType1].compareTo(a[widget.sortType1]);
+        return bValue.compareTo(aValue);
       } else {
-        return a[widget.sortType1].compareTo(b[widget.sortType1]);
+        return aValue.compareTo(bValue);
       }
     });
   }
@@ -128,10 +134,15 @@ class _PlayerListState extends State<PlayerList> {
       _playerData.add(value);
     });
     _playerData.sort((a, b) {
+      dynamic aValue = a[widget.sortType1];
+      aValue = double.tryParse(aValue) == null ? aValue : double.parse(aValue);
+      dynamic bValue = b[widget.sortType1];
+      bValue = double.tryParse(bValue) == null ? bValue : double.parse(bValue);
+
       if (widget.sortType2 == 0) {
-        return b[widget.sortType1].compareTo(a[widget.sortType1]);
+        return bValue.compareTo(aValue);
       } else {
-        return a[widget.sortType1].compareTo(b[widget.sortType1]);
+        return aValue.compareTo(bValue);
       }
     });
   }
@@ -140,26 +151,36 @@ class _PlayerListState extends State<PlayerList> {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: ListView.builder(
-        itemCount: _playerData.length,
-        itemBuilder: (context, index) => GestureDetector(
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PlayerDetailsScreen(
-                playerData: _playerData[index],
+      child: _playerData.isEmpty
+          ? const Center(
+              child: Text(
+                "검색 결과 없음",
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Colors.white,
+                ),
+              ),
+            )
+          : ListView.builder(
+              itemCount: _playerData.length,
+              itemBuilder: (context, index) => GestureDetector(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PlayerDetailsScreen(
+                      playerData: _playerData[index],
+                    ),
+                  ),
+                ),
+                child: PlayerListItem(
+                  name: _playerData[index]["name"],
+                  speed: _playerData[index]["속력"],
+                  position: _playerData[index]["포지션"],
+                  overall: _playerData[index]["오버롤"],
+                  foot: _playerData[index]["왼발 오른발"],
+                ),
               ),
             ),
-          ),
-          child: PlayerListItem(
-            name: _playerData[index]["name"],
-            speed: _playerData[index]["속력"],
-            position: _playerData[index]["포지션"],
-            overall: _playerData[index]["오버롤"],
-            foot: _playerData[index]["왼발 오른발"],
-          ),
-        ),
-      ),
     );
   }
 }

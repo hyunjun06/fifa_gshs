@@ -12,7 +12,9 @@ import '../../constants/sizes.dart';
 import '../../states/search_conditions_state.dart';
 
 class SearchConditionsScreen extends StatefulWidget {
-  const SearchConditionsScreen({super.key});
+  final PageController pageController;
+
+  const SearchConditionsScreen({super.key, required this.pageController});
 
   @override
   State<SearchConditionsScreen> createState() => _SearchConditionsScreenState();
@@ -26,9 +28,20 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
     super.initState();
   }
 
-  void _onToggleClassAllSelect(bool? newValue) {
+  void _onToggleClassAllSelect(List<String> classNames, bool? newValue) {
     setState(() {
       _isClassAllSelect = newValue!;
+      for (int index = 0; index < classNames.length; index++) {
+        StoreProvider.of<SearchConditionsState>(context).dispatch(
+          SearchStateAction(
+            type: SearchStateActions.setClassValue,
+            payload: {
+              "index": index,
+              "value": newValue,
+            },
+          ),
+        );
+      }
     });
   }
 
@@ -53,6 +66,7 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                       ),
                     );
                   },
+                  onSubmitted: (_) => widget.pageController.jumpToPage(1),
                   decoration: InputDecoration(
                     isDense: true,
                     prefixIcon: const Padding(
@@ -101,7 +115,8 @@ class _SearchConditionsScreenState extends State<SearchConditionsScreen> {
                           height: Sizes.size24,
                           child: Checkbox(
                             value: _isClassAllSelect,
-                            onChanged: _onToggleClassAllSelect,
+                            onChanged: (value) => _onToggleClassAllSelect(
+                                viewModel.classNames, value),
                           ),
                         ),
                         const Text(

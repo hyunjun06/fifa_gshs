@@ -63,6 +63,21 @@ class MainPage extends StatelessWidget {
           ),
         ),
       ),
+      bottomNavigationBar: Container(
+        height: Sizes.size40,
+        decoration: const BoxDecoration(color: ThemeColors.bgColor),
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Text("Made by 이현준(@ehj._.frd) - gs22081",
+                style: TextStyle(color: Colors.grey)),
+            Text(
+              "Currently in beta phase. Contact for bug reports.",
+              style: TextStyle(color: Colors.grey),
+            )
+          ],
+        ),
+      ),
     );
   }
 }

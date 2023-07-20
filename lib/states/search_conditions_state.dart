@@ -79,7 +79,7 @@ class SearchConditionsState {
 
 enum SearchStateActions {
   setPositionValue,
-  toggleClass,
+  setClassValue,
   setSortType1,
   setSortType2,
   setNameFilters,
@@ -106,9 +106,9 @@ SearchConditionsState searchConditionsReducer(
         classValues: previousState.classValues,
         nameFilters: previousState.nameFilters,
       );
-    case SearchStateActions.toggleClass:
+    case SearchStateActions.setClassValue:
       List<bool> newClassValues = List.from(previousState.classValues);
-      newClassValues[action.payload] = !newClassValues[action.payload];
+      newClassValues[action.payload["index"]] = action.payload["value"];
       return SearchConditionsState(
         positions: previousState.positions,
         sortType1: previousState.sortType1,
