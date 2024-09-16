@@ -41,6 +41,8 @@ dependencies:
   flutter_redux_dev_tools: ^0.5.2
   flutter_web_frame: ^0.0.3
   flutter_launcher_icons: ^0.13.1
+  http: ^0.13.5
+  html: ^0.15.0
 
 dev_dependencies:
   flutter_test:
@@ -83,6 +85,7 @@ flutter:
   assets:
     - assets/classes/GS40.png
     - assets/player_data.json
+    - assets/loading.gif
     
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

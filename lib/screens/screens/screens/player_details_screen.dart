@@ -11,6 +11,12 @@ class PlayerDetailsScreen extends StatelessWidget {
 
   PlayerDetailsScreen({super.key, required this.playerData});
 
+  // Function to check if a string is a valid number using regex
+  bool isNumeric(String str) {
+    final numericRegex = RegExp(r'^-?\d+$');
+    return numericRegex.hasMatch(str);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,7 +96,9 @@ class PlayerDetailsScreen extends StatelessWidget {
                           ),
                           Gaps.h4,
                           Text(
-                            playerData["왼발 오른발"].split(',')[1],
+                            playerData["왼발 오른발"] == ""
+                                ? ""
+                                : playerData["왼발 오른발"].split(',')[1],
                             style: const TextStyle(
                               color: Colors.black,
                             ),
@@ -134,7 +142,11 @@ class PlayerDetailsScreen extends StatelessWidget {
                         playerData[displayStats[index]],
                         style: TextStyle(
                           color: PlayerListItem.getNumericColor(
-                            int.parse(playerData[displayStats[index]]),
+                            int.parse(
+                              isNumeric(playerData[displayStats[index]])
+                                  ? playerData[displayStats[index]]
+                                  : "0",
+                            ),
                           ),
                           fontSize: Sizes.size16,
                           fontWeight: FontWeight.w700,
@@ -196,8 +208,11 @@ class PlayerDetailsScreen extends StatelessWidget {
                                           ? Colors.white
                                           : PlayerListItem.getNumericColor(
                                               int.parse(
-                                                playerData.values
-                                                    .elementAt(index),
+                                                isNumeric(playerData.values
+                                                        .elementAt(index))
+                                                    ? playerData.values
+                                                        .elementAt(index)
+                                                    : "0",
                                               ),
                                             ),
                                       fontSize: Sizes.size16,
@@ -238,10 +253,15 @@ class PlayerDetailsScreen extends StatelessWidget {
                                     style: TextStyle(
                                       color: PlayerListItem.getNumericColor(
                                         int.parse(
-                                          playerData.values.elementAt(
-                                              (playerData.keys.length / 2)
-                                                      .round() +
-                                                  index),
+                                          isNumeric(playerData.values.elementAt(
+                                                  (playerData.keys.length / 2)
+                                                          .round() +
+                                                      index))
+                                              ? playerData.values.elementAt(
+                                                  (playerData.keys.length / 2)
+                                                          .round() +
+                                                      index)
+                                              : "0",
                                         ),
                                       ),
                                       fontSize: Sizes.size16,

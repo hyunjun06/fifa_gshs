@@ -1,7 +1,6 @@
-import 'dart:convert';
-
 import 'package:fifa_gshs/screens/screens/screens/player_details_screen.dart';
 import 'package:fifa_gshs/screens/screens/widgets/player_list_item.dart';
+import 'package:fifa_gshs/states/retrieve_data.dart';
 import 'package:fifa_gshs/states/search_conditions_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -16,13 +15,12 @@ class SearchResultsScreen extends StatefulWidget {
 class _SearchResultsScreenState extends State<SearchResultsScreen> {
   Map<String, dynamic>? playerData;
 
-  //TODO: server
   Future<void> readJson() async {
-    final String response = await DefaultAssetBundle.of(context)
-        .loadString("assets/player_data.json");
-    final data = await json.decode(response);
+    // final String response = await DefaultAssetBundle.of(context)
+    //     .loadString("assets/player_data.json");
+    final Map<String, dynamic> response = await retrieveData();
     setState(() {
-      playerData = data;
+      playerData = response;
     });
   }
 
@@ -44,7 +42,11 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       builder: (_, store) => Column(
         children: [
           playerData == null
-              ? const Text("loading")
+              ? const Expanded(
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                )
               : PlayerList(
                   playerData: playerData!,
                   positionFilter: store.state.positions,
@@ -147,7 +149,6 @@ class _PlayerListState extends State<PlayerList> {
     });
   }
 
-  //TODO: loading
   @override
   Widget build(BuildContext context) {
     return Expanded(
@@ -173,11 +174,19 @@ class _PlayerListState extends State<PlayerList> {
                   ),
                 ),
                 child: PlayerListItem(
-                  name: _playerData[index]["name"],
-                  speed: _playerData[index]["속력"],
-                  position: _playerData[index]["포지션"],
-                  overall: _playerData[index]["오버롤"],
-                  foot: _playerData[index]["왼발 오른발"],
+                  name: _playerData[index]["이름"],
+                  speed: _playerData[index]["속력"] == ""
+                      ? "0"
+                      : _playerData[index]["속력"],
+                  position: _playerData[index]["포지션"] == ""
+                      ? "N/A"
+                      : _playerData[index]["포지션"],
+                  overall: _playerData[index]["오버롤"] == ""
+                      ? "0"
+                      : _playerData[index]["오버롤"],
+                  foot: _playerData[index]["왼발 오른발"] == ""
+                      ? "0,0"
+                      : _playerData[index]["왼발 오른발"],
                 ),
               ),
             ),
